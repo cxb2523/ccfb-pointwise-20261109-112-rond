@@ -1,0 +1,229 @@
+{
+    "paths": {
+        "/foo/*": {
+            "get": {
+                "x-permission": {
+                    "allow": "foo",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "x-permission": {
+                    "allow": "foo",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "x-permission": {
+                    "allow": "foo",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "x-permission": {
+                    "allow": "foo"
+                }
+            },
+            "delete": {
+                "x-permission": {
+                    "allow": "foo"
+                }
+            }
+        },
+        "/foo/bar/:params": {
+            "get": {
+                "x-permission": {
+                    "allow": "foo_bar_params",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            }
+        },
+        "/no/method": {},
+        "/use/method/that/not/existing/*": {
+            "delete": {
+                "x-permission": {
+                    "allow": "foo_bar_params"
+                }
+            }
+        },
+        "/foo/bar/*": {
+            "get": {
+                "x-permission": {
+                    "allow": "foo_bar",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "x-permission": {
+                    "allow": "foo_bar"
+                }
+            },
+            "patch": {
+                "x-permission": {
+                    "allow": "foo_bar"
+                }
+            },
+            "put": {
+                "x-permission": {
+                    "allow": "foo_bar"
+                }
+            },
+            "delete": {
+                "x-permission": {
+                    "allow": "foo_bar"
+                }
+            }
+        },
+        "/foo/bar/nested": {
+            "get": {
+                "x-permission": {
+                    "allow": "foo_bar_nested",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            }
+        },
+        "/foo/bar/nested/case/*": {
+            "get": {
+                "x-permission": {
+                    "allow": "foo_bar_nested_case"
+                }
+            }
+        },
+        "/test/all/*": {
+            "all": {
+                "x-permission": {
+                    "allow": "permission_for_all"
+                }
+            },
+            "get": {
+                "x-permission": {
+                    "allow": "permission_for_get"
+                }
+            },
+            "post": {
+                "x-permission": {
+                    "allow": "permission_for_post"
+                }
+            }
+        },
+        "/projects/": {
+            "all": {
+                "x-permission": {
+                    "allow": "project_all"
+                }
+            },
+            "get": {
+                "x-permission": {
+                    "allow": "project_get"
+                }
+            }
+        },
+        "/with/trailing/slash/": {
+            "all": {
+              "x-rond": {
+                "requestFlow": {
+                  "policyName": "foo_bar"
+                },
+                "responseFlow": {
+                  "policyName": "original_path"
+                },
+                "options": {
+                    "ignoreTrailingSlash": true
+                }
+              }
+            }
+        },
+        "/ignore/trailing/slash/": {
+            "get": {
+              "x-rond": {
+                "requestFlow": {
+                  "policyName": "foo_bar",
+                  "preventBodyLoad": true
+                },
+                "responseFlow": {
+                  "policyName": "original_path"
+                },
+                "options": {
+                    "ignoreTrailingSlash": true
+                }
+              }
+            }
+        },
+        "/with/preventbodyload": {
+            "get": {
+              "x-rond": {
+                "requestFlow": {
+                  "policyName": "foo_bar",
+                  "preventBodyLoad": true
+                }
+              }
+            }
+        },
+        "/without/trailing/slash": {
+            "post": {
+              "x-rond": {
+                "requestFlow": {
+                  "policyName": "foo_bar"
+                },
+                "options": {
+                    "ignoreTrailingSlash": true
+                }
+              }
+            }
+        },
+        "/trailing-slash-with-variables/:id": {
+            "get": {
+              "x-rond": {
+                "requestFlow": {
+                  "policyName": "allow_params_trailing_slash"
+                },
+                "options": {
+                    "ignoreTrailingSlash": true
+                }
+              }
+            }
+        },
+        "/ends-with-trailing-slash/:id/": {
+            "get": {
+              "x-rond": {
+                "requestFlow": {
+                  "policyName": "allow_params_trailing_slash"
+                },
+                "options": {
+                    "ignoreTrailingSlash": true
+                }
+              }
+            }
+        }
+    }
+}

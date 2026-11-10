@@ -1,0 +1,25 @@
+{
+    "paths": {
+        "/users-from-static-file/": {
+            "get": {
+                "x-permission": {
+                    "allow": "foobar",
+                    "resourceFilter": {
+                        "rowFilter": {
+                            "enabled": true,
+                            "headerKey": "customHeaderKey"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "x-permission": {
+                    "allow": "notexistingpermission"
+                }
+            }
+        },
+        "/no-permission-from-static-file": {
+            "post": {}
+        }
+    }
+}
