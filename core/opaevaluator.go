@@ -43,6 +43,11 @@ type RondConfig struct {
 	RequestFlow  RequestFlow       `json:"requestFlow"`
 	ResponseFlow ResponseFlow      `json:"responseFlow"`
 	Options      PermissionOptions `json:"options"`
+
+	// OwnerBinding optionally enables the resource-owner enforcement unit.
+	// When left empty the check is skipped and legacy policies behave exactly
+	// as before.
+	OwnerBinding OwnerBinding `json:"ownerBinding,omitempty"`
 }
 
 type QueryOptions struct {
@@ -76,6 +81,7 @@ type OPAEvaluator struct {
 	redisClient   interface{}
 	generateQuery bool
 	logger        logging.Logger
+	ownerChecker  *ownerChecker
 }
 
 type OPAEvaluatorOptions struct {
@@ -84,12 +90,21 @@ type OPAEvaluatorOptions struct {
 	RedisClient           interface{}
 	Logger                logging.Logger
 	Builtins              []func(*rego.Rego)
+	OwnerBinding          OwnerBinding
 }
 
 func (opaEval *OPAEvaluator) partiallyEvaluate(logger logging.Logger, input EvalInput, options *PolicyEvaluationOptions) (primitive.M, error) {
 	if options == nil {
 		options = &PolicyEvaluationOptions{}
 	}
+
+	// Resource-owner enforcement runs on the same chain as the Rego
+	// evaluation, on the already assembled input. It only reads the input, so
+	// the shared input passed to Rego is never rewritten.
+	if err := opaEval.enforceOwnerBinding(logger, input); err != nil {
+		return nil, err
+	}
+
 	opaEvaluationTimeStart := time.Now()
 
 	if opaEval.evaluator.preparedPartialQuery == nil {
@@ -139,6 +154,13 @@ func (opaEval *OPAEvaluator) Evaluate(logger logging.Logger, input EvalInput, op
 	if options == nil {
 		options = &PolicyEvaluationOptions{}
 	}
+
+	// See partiallyEvaluate: the owner check is the first gate on the
+	// evaluation chain, before any Rego query is prepared/run.
+	if err := opaEval.enforceOwnerBinding(logger, input); err != nil {
+		return nil, err
+	}
+
 	if opaEval.evaluator.preparedEvalQuery == nil {
 		return nil, fmt.Errorf("%w: %s", ErrPolicyEvalFailed, "preparedEvalQuery is nil")
 	}
@@ -180,6 +202,22 @@ func (opaEval *OPAEvaluator) Evaluate(logger logging.Logger, input EvalInput, op
 		return responseBodyOverwriter, nil
 	}
 	return nil, ErrPolicyNotAllowed
+}
+
+// enforceOwnerBinding runs the standalone owner check. It is a no-op when the
+// policy did not declare a binding, keeping legacy traffic untouched.
+func (opaEval *OPAEvaluator) enforceOwnerBinding(logger logging.Logger, input EvalInput) error {
+	if opaEval.ownerChecker == nil {
+		return nil
+	}
+	if err := opaEval.ownerChecker.check(input); err != nil {
+		logger.WithFields(map[string]any{
+			"policyName": opaEval.PolicyName,
+			"error":      err.Error(),
+		}).Info("resource owner binding enforcement failed")
+		return err
+	}
+	return nil
 }
 
 func (evaluator *OPAEvaluator) getContext() context.Context {

@@ -154,7 +154,15 @@ func EvaluateRequest(
 		logger.WithField("error", logrus.Fields{
 			"message": err.Error(),
 		}).Error("RBAC policy evaluation failed")
-		utils.FailResponseWithCode(w, http.StatusForbidden, "RBAC policy evaluation failed", utils.NO_PERMISSIONS_ERROR_MESSAGE)
+
+		// A malformed input for a declared owner binding is a client error
+		// (400); every other authorization failure (owner mismatch, fail-closed
+		// missing owner) stays a 403.
+		statusCode := http.StatusForbidden
+		if errors.Is(err, core.ErrOwnerInputInvalid) {
+			statusCode = http.StatusBadRequest
+		}
+		utils.FailResponseWithCode(w, statusCode, "RBAC policy evaluation failed", utils.NO_PERMISSIONS_ERROR_MESSAGE)
 		return err
 	}
 	if !result.Allowed {

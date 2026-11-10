@@ -134,6 +134,8 @@ func createOasHandler(scopedMethodContent VerbConfig, oasPathCleaned string) fun
 		header.Set("options.enableResourcePermissionsMapOptimization", strconv.FormatBool(permission.Options.EnableResourcePermissionsMapOptimization))
 		header.Set("requestFlow.preventBodyLoad", strconv.FormatBool(permission.RequestFlow.PreventBodyLoad))
 		header.Set("options.ignoreTrailingSlash", strconv.FormatBool(permission.Options.IgnoreTrailingSlash))
+		header.Set("ownerBinding.ownerPath", permission.OwnerBinding.OwnerPath)
+		header.Set("ownerBinding.adminGroups", strings.Join(permission.OwnerBinding.AdminGroups, ","))
 		header.Set("pathTemplate", oasPathCleaned)
 	}
 }
@@ -222,6 +224,13 @@ func (oas *OpenAPISpec) FindPermission(OASRouter *bunrouter.CompatRouter, path s
 	if err != nil {
 		return core.RondConfig{}, routerInfo, fmt.Errorf("error while parsing requestFlow.preventBodyLoad")
 	}
+
+	ownerPath := recorderResult.Header.Get("ownerBinding.ownerPath")
+	var adminGroups []string
+	if rawAdminGroups := recorderResult.Header.Get("ownerBinding.adminGroups"); rawAdminGroups != "" {
+		adminGroups = strings.Split(rawAdminGroups, ",")
+	}
+
 	return core.RondConfig{
 		RequestFlow: core.RequestFlow{
 			PolicyName:      recorderResult.Header.Get("allow"),
@@ -237,6 +246,10 @@ func (oas *OpenAPISpec) FindPermission(OASRouter *bunrouter.CompatRouter, path s
 		Options: core.PermissionOptions{
 			EnableResourcePermissionsMapOptimization: enableResourcePermissionsMapOptimization,
 			IgnoreTrailingSlash:                      ignoreTrailingSlash,
+		},
+		OwnerBinding: core.OwnerBinding{
+			OwnerPath:   ownerPath,
+			AdminGroups: adminGroups,
 		},
 	}, routerInfo, nil
 }

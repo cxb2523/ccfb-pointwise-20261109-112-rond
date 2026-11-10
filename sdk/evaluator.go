@@ -91,6 +91,7 @@ func (e evaluator) EvaluateRequestPolicy(ctx context.Context, rondInput core.Inp
 	}
 
 	opaEvaluatorOptions := e.evaluatorOptions.opaEvaluatorOptions(logger)
+	opaEvaluatorOptions.OwnerBinding = rondConfig.OwnerBinding
 
 	auditAgent := e.auditAgentPool.New()
 	ctx = audit.WithAuditCache(ctx, auditAgent)
@@ -191,6 +192,7 @@ func (e evaluator) EvaluateResponsePolicy(ctx context.Context, rondInput core.In
 	}
 
 	opaEvaluatorOptions := e.evaluatorOptions.opaEvaluatorOptions(logger)
+	opaEvaluatorOptions.OwnerBinding = e.rondConfig.OwnerBinding
 
 	auditAgent := e.auditAgentPool.New()
 	ctx = audit.WithAuditCache(ctx, auditAgent)

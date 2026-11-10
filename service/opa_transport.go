@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -130,7 +131,13 @@ func (t *OPATransport) RoundTrip(req *http.Request) (resp *http.Response, err er
 		},
 	})
 	if err != nil {
-		t.responseWithError(resp, err, http.StatusForbidden)
+		// Owner input format errors are client errors (400); owner
+		// authorization failures stay 403.
+		statusCode := http.StatusForbidden
+		if errors.Is(err, core.ErrOwnerInputInvalid) {
+			statusCode = http.StatusBadRequest
+		}
+		t.responseWithError(resp, err, statusCode)
 		return resp, nil
 	}
 

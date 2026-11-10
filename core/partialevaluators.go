@@ -83,6 +83,7 @@ func (partialEvaluators PartialResultsEvaluators) GetEvaluatorFromPolicy(ctx con
 			mongoClient:   options.MongoClient,
 			redisClient:   options.RedisClient,
 			generateQuery: eval.preparedPartialQuery != nil,
+			ownerChecker:  newOwnerChecker(options.OwnerBinding),
 		}, nil
 	}
 	return nil, fmt.Errorf("%w: %s", ErrEvaluatorNotFound, policy)
